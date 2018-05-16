@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 配置连接池 -->
+	<!-- 引入外部属性文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	<!-- 配置c3P0 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driver}"/>
+		<property name="jdbcUrl" value="${jdbc.url}"/>
+		<property name="user" value="${jdbc.user}"/>
+		<property name="password" value="${jdbc.password}"/>
+	</bean>
+	
+	<!-- 配置Hibernate -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="hibernateProperties">
+			<props>
+			<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+					<prop key="hibernate.show_sql">true</prop>
+					<prop key="hibernate.format_sql">true</prop>
+					<prop key="hibernate.connection.autocommit">false</prop>
+					<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+		<!-- 配置映射文件 -->
+		<property name="mappingResources">
+			<list>
+				<value>cn/book/user/entities/User.hbm.xml</value>
+				<value>cn/book/category/entities/Category.hbm.xml</value>
+				<value>cn/book/product/entities/Product.hbm.xml</value>
+				<value>cn/book/categorysecond/entities/CategorySecond.hbm.xml</value>
+				<value>cn/book/order/entities/Order.hbm.xml</value>
+				<value>cn/book/order/entities/OrderItem.hbm.xml</value>
+				<value>cn/book/adminuser/entities/AdminUser.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	<!-- 开启注解事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- action配置**************************** -->
+	<!-- 访问首页action -->
+	<bean id="indexAction" class="cn.book.index.action.IndexAction" scope="prototype">
+		<property name="categoryService" ref="categoryService"></property>
+		<property name="productService" ref="productService"></property>
+	</bean>
+	<!-- 用户模块action  -->
+	<bean id="userAction" class="cn.book.user.action.UserAction" scope="prototype">
+		<property name="userService" ref="userService"></property>
+	</bean>
+	<bean id="verificationCodeAction" class="cn.book.user.action.VerificationCodeAction"></bean>
+	
+	<!-- 商品模块action -->
+	<bean id="productAction" class="cn.book.product.action.ProductAction" scope="prototype">
+		<property name="productService" ref="productService"></property>
+	</bean>
+	<!-- 购物车模块action -->
+	<bean id="cartAction" class="cn.book.cart.action.CartAction" scope="prototype">
+		<property name="productService" ref="productService"></property>
+	</bean>
+	<!-- 订单模块action -->
+	<bean id="orderAction" class="cn.book.order.action.OrderAction" scope="prototype">
+		<property name="orderService" ref="orderService"></property>
+	</bean>
+	<!-- 后台管理员action -->
+	<bean id="adminUserAction"  class="cn.book.adminuser.action.AdminUserAction" scope="prototype">
+		<property name="adminUserService" ref="adminUserService"></property>
+	</bean>
+	<!-- 后台一级分类action -->
+	<bean id="adminCategoryAction" class="cn.book.category.adminaction.AdminCategoryAction" scope="prototype">
+		<property name="categoryService" ref="categoryService"></property>
+	</bean>
+	<!-- 后台二级分类action -->
+	<bean id="adminCategorySecondAction" class="cn.book.categorysecond.adminaction.AdminCategorySecondAction" scope="prototype">
+		<property name="categorySecondService" ref="categorySecondService"></property>
+		<property name="categoryService" ref="categoryService"></property>
+	</bean>
+	<!-- 后台商品管理action -->
+	<bean id="adminProductAction" class="cn.book.product.adminaction.AdminProductAction" scope="prototype">
+		<property name="productService" ref="productService"></property>
+		<property name="categorySecondService" ref="categorySecondService"></property>
+	</bean>
+	<!-- 后台订单管理action -->
+	<bean id="adminOrderAction" class="cn.book.order.adminaction.AdminOrderAction" scope="prototype">
+		<property name="orderService" ref="orderService"></property>
+	</bean>
+	
+	<!-- Service业务层配置 -->
+	<bean id="userService" class="cn.book.user.service.UserService">
+		<property name="userDao" ref="userDao"></property>
+	</bean>
+	<bean id="categoryService" class="cn.book.category.service.CategoryService">
+		<property name="categoryDao" ref="categoryDao"></property>
+	</bean>
+	<bean id="productService" class="cn.book.product.service.ProductService">
+		<property name="productDao" ref="productDao"></property>
+	</bean>
+	<bean id="orderService" class="cn.book.order.service.OrderService">
+		<property name="orderDao" ref="orderDao"></property>
+	</bean>
+	<bean id="adminUserService" class="cn.book.adminuser.service.AdminUserService">
+		<property name="adminUserDao" ref="adminUserDao"></property>
+	</bean>
+	<bean id="categorySecondService" class="cn.book.categorysecond.service.CategorySecondService">
+		<property name="categorySecondDao" ref="categorySecondDao"></property>
+	</bean>
+	
+	<!-- Dao持久层配置 -->
+	<bean id="userDao" class="cn.book.user.dao.UserDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean id="categoryDao" class="cn.book.category.dao.CategoryDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean id="productDao" class="cn.book.product.dao.ProductDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean id="orderDao" class="cn.book.order.dao.OrderDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean id="adminUserDao" class="cn.book.adminuser.dao.AdminUserDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean id="categorySecondDao" class="cn.book.categorysecond.dao.CategorySecondDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+</beans>

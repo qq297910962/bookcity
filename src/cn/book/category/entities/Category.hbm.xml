@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+    
+ <hibernate-mapping>
+ 	<class name="cn.book.category.entities.Category" table="category">
+ 		<id name="cid">
+ 			<generator class="native"></generator>
+ 		</id>
+ 		<property name="cname" />
+ 		
+ 		<!-- 配置二级分类的集合 ,配置cascade删除一级分类时其包含的二级分类也会被删除-->
+ 		<set order-by="csid" cascade="delete" name="categorySeconds" lazy="false">
+ 			<key column="cid"></key>
+ 			<one-to-many class="cn.book.categorysecond.entities.CategorySecond"/>
+ 		</set>
+ 	</class>
+ 
+ </hibernate-mapping>
